@@ -1,0 +1,33 @@
+# Environment / secrets
+.env
+.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Vector database & runtime data (regenerated per session)
+vector_db/*
+!vector_db/.gitkeep
+
+# Uploaded leaflets (may contain personal data - never commit)
+data/pdfs/*
+!data/pdfs/.gitkeep
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

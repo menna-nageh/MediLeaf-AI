@@ -2,19 +2,6 @@
 
 > AI Medication Leaflet Assistant
 
-## 👤 Participant
-
-| Field            | Value                                |
-| ---------------- | ------------------------------------ |
-| Full Name        | Menna Nageh Bedier  |
-| Project Name     | MediLeaf AI                          |
-| GitHub Username  | https://github.com/menna-nageh   |
-| Challenge Batch  | June–July 2026                       |
-| Training Program | Large Language Models (LLMs) Program |
-| Organization     | [**Edrak for Ai**](https://edrak4ai.com/en) |
-
----
-
 # 📖 Project Overview
 
 MediLeaf AI is an intelligent assistant for medicine package leaflets.
@@ -135,13 +122,6 @@ MediLeaf AI makes medicine leaflets easier to understand by:
 
 ---
 
-# 📚 About the Challenge
-
-This project was developed as part of the [**Tips Hindawi**](https://www.tipshindawi.com/) Challenge (June–July) 2026.
-
-[Tips Hindawi](https://www.tipshindawi.com/) is the internships department of [**Edrak for Ai**](https://edrak4ai.com/en), and the challenge encourages participants to build real-world projects, apply practical skills, and showcase their work through GitHub.
-
----
 
 # 📄 License
 
@@ -151,17 +131,19 @@ This project is shared for educational and portfolio purposes.
 
 ## Submission Guidance
 
-Send the full `MediLeaf-AI` folder, including:
+Please submit the full `MediLeaf-AI` project folder, including:
 
-* `README.md`
-* `requirements.txt`
-* `streamlit_app.py`
-* `app/`
-* `utils/`
-* `data/`
-* `styles/`
-* `assets/`
-* `tests/`
+- `README.md`
+- `requirements.txt`
+- `streamlit_app.py`
+- `app/`
+- `utils/`
+- `data/`
+- `styles/`
+- `assets/`
+- `tests/`
 
-If you need a minimal submission, omit generated content like `vector_db/`
-and any uploaded PDF files in `data/pdfs/`.
+### Notes:
+- Do NOT include generated files such as `vector_db/`
+- Do NOT include uploaded PDF files inside `data/pdfs/`
+- Ensure the project runs correctly using the provided `requirements.txt`

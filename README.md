@@ -1,149 +1,136 @@
 # 🚀 MediLeaf AI
 
-> AI Medication Leaflet Assistant
+# 🚀 [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026
+
+> 🏆 This repository is my official submission for the [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026.
+
+---
+
+## 👤 Participant
+
+| Field            | Value                                   |
+| ---------------- | --------------------------------------- |
+| Full Name        | Menna Nageh Bedier                      |
+| Project Name     | MediLeaf AI                             |
+| GitHub Username  | https://github.com/menna-nageh          |
+| Challenge Batch  | June–July 2026                          |
+| Training Program | Large Language Models (LLMs) Program    |
+| Organization     | [Edrak for AI](https://edrak4ai.com/en) |
+
+---
 
 # 📖 Project Overview
 
-MediLeaf AI is an intelligent assistant for medicine package leaflets.
-Users upload a PDF leaflet, then ask natural-language questions such as
-"Can I take this before food?" or "What are the common side effects?".
+**MediLeaf AI** is an intelligent AI-powered assistant that helps users understand medicine leaflets بسهولة وسرعة.
 
-The assistant answers strictly from the uploaded leaflet only, with no
-medical diagnosis, no prescription, and no external general knowledge.
-Every response is grounded in the document and cites the source page.
-The system ensures safe, transparent, and reliable answers for everyday users.
+Users can upload a medicine leaflet (PDF) and ask questions مثل:
+
+* *Can I take this before food?*
+* *What are the side effects?*
+
+The system answers **only based on the leaflet content**, ensuring accuracy and reliability.
 
 ---
 
 # ✨ Features
 
-* Upload one or more medicine leaflet PDFs.
-* Automatic text extraction, chunking, and semantic search over the leaflet.
-* Answer questions using only leaflet content.
-* Source citations and retrieval confidence shown for every answer.
-* Automatic leaflet summary after upload.
-* Emergency keyword detection to highlight urgent phrases safely.
-* Follow-up question memory for short conversational context.
-* 👍 / 👎 feedback on answers.
+* 📄 Upload and process medical leaflet PDFs
+* 🤖 Ask questions using natural language
+* 🎯 Answers strictly grounded in document content (RAG)
+* 🌐 Supports clear and simple explanations
+* 💡 Fast and interactive Streamlit interface
 
 ---
 
 # 🛠️ Technologies Used
 
-* Python 3.10+
-* Streamlit for the web interface
-* LangChain for RAG orchestration
-* ChromaDB for vector search
-* HuggingFace embeddings (`BAAI/bge-small-en-v1.5`)
-* Google Gemini via `langchain-google-genai`
-* PyMuPDF for PDF parsing
-* `python-dotenv` for environment configuration
-* `pytest` for unit testing
+* **Python**
+* **Streamlit** (UI)
+* **LangChain**
+* **Google Gemini (LLM)**
+* **SentenceTransformers / BGE Embeddings**
+* **ChromaDB** (Vector Database)
+* **PyMuPDF (fitz)** for PDF processing
 
 ---
 
 # ⚙️ Installation
 
-1. Clone or unzip the repository and open the `MediLeaf-AI` folder.
-2. Create and activate a Python virtual environment:
-
 ```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
-```
+# Clone the repository
+git clone https://github.com/menna-nageh/MediLeaf-AI.git
 
-3. Install dependencies:
+# Navigate to project folder
+cd MediLeaf-AI
 
-```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/Scripts/activate   # Windows
+
+# Install dependencies
 pip install -r requirements.txt
 ```
-
-4. Copy the environment template and add your API key:
-
-```bash
-copy .env.example .env
-```
-
-5. Open `.env` and set `GOOGLE_API_KEY` to your Gemini API key.
 
 ---
 
 # 🚀 Usage
 
-Run the Streamlit app:
-
 ```bash
 streamlit run streamlit_app.py
 ```
 
-Then in your browser:
+Then:
 
-1. Upload one or more medicine leaflet PDFs.
-2. Click **Process leaflet(s)**.
-3. Read the generated leaflet summary.
-4. Ask questions in the chat box or use the quick question buttons.
-5. Review the answer, source citation, and confidence score.
+1. Upload a medicine leaflet (PDF)
+2. Ask your question
+3. Get accurate answers instantly
 
 ---
 
 # 📸 Demo
 
-Open the app in your browser after running Streamlit, upload a leaflet PDF,
-and ask questions like:
+🎯 Quick Preview
+MediLeaf AI in action — upload, ask, and get answers instantly.
 
-* "Can I take this before food?"
-* "What are the common side effects?"
-* "Can children use this medicine?"
+🧾 Step 1: Upload Medicine Leaflet
 
-The assistant responds using only the uploaded leaflet.
+❓ Step 2: Ask Your Question
+
+💡 Step 3: Get AI Answer
 
 ---
 
 # 📈 Results
 
-MediLeaf AI makes medicine leaflets easier to understand by:
-
-* Reducing the time needed to find dosage, warnings, and side-effect details.
-* Helping users get clear, leaflet-specific answers in plain language.
-* Avoiding hallucination by answering only from the uploaded document.
-* Preserving source transparency with page citations.
+* Successfully built a **working RAG system** for medical documents
+* Accurate answers limited strictly to leaflet content
+* Improved accessibility of complex medical information
+* Clean and user-friendly interface
 
 ---
 
 # 🔮 Future Improvements
 
-* Add OCR support for scanned leaflet PDFs.
-* Support multiple languages and translated answers.
-* Add mobile-friendly UI and voice question support.
-* Allow users to compare multiple leaflets side-by-side.
+* 🌍 Add multilingual support (Arabic/English fully)
+* 📱 Deploy as a web/mobile app
+* 🧠 Improve answer explanations with summaries
+* 📊 Add confidence scoring for answers
 
 ---
 
+# 📚 About the Challenge
+
+This project was developed as part of the [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026.
+
+The challenge is organized by the internships department of [Edrak for AI](https://edrak4ai.com/en), aiming to help participants:
+
+* Build real-world AI projects
+* Apply practical skills
+* Showcase their work on GitHub
+
+---
 
 # 📄 License
 
 This project is shared for educational and portfolio purposes.
-
----
-
-## Submission Guidance
-
-Please submit the full `MediLeaf-AI` project folder, including:
-
-- `README.md`
-- `requirements.txt`
-- `streamlit_app.py`
-- `app/`
-- `utils/`
-- `data/`
-- `styles/`
-- `assets/`
-- `tests/`
-
-### Notes:
-- Do NOT include generated files such as `vector_db/`
-- Do NOT include uploaded PDF files inside `data/pdfs/`
-- Ensure the project runs correctly using the provided `requirements.txt`
+orrectly using the provided `requirements.txt`

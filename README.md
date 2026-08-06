@@ -1,24 +1,5 @@
 # 🚀 MediLeaf AI
 
-# 🚀 [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026
-
-> 🏆 This repository is my official submission for the [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026.
-
----
-
-## 👤 Participant
-
-| Field            | Value                                   |
-| ---------------- | --------------------------------------- |
-| Full Name        | Menna Nageh Bedier                      |
-| Project Name     | MediLeaf AI                             |
-| GitHub Username  | https://github.com/menna-nageh          |
-| Challenge Batch  | June–July 2026                          |
-| Training Program | Large Language Models (LLMs) Program    |
-| Organization     | [Edrak for AI](https://edrak4ai.com/en) |
-
----
-
 # 📖 Project Overview
 
 **MediLeaf AI** is an intelligent AI-powered assistant that helps users understand medicine leaflets بسهولة وسرعة.
@@ -117,16 +98,6 @@ MediLeaf AI in action — upload, ask, and get answers instantly.
 * 📊 Add confidence scoring for answers
 
 ---
-
-# 📚 About the Challenge
-
-This project was developed as part of the [Tips Hindawi](https://www.tipshindawi.com/) Challenge (June–July) 2026.
-
-The challenge is organized by the internships department of [Edrak for AI](https://edrak4ai.com/en), aiming to help participants:
-
-* Build real-world AI projects
-* Apply practical skills
-* Showcase their work on GitHub
 
 ---
 

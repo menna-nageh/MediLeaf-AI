@@ -2,14 +2,14 @@
 
 # 📖 Project Overview
 
-**MediLeaf AI** is an intelligent AI-powered assistant that helps users understand medicine leaflets بسهولة وسرعة.
+MediLeaf AI is an intelligent AI-powered assistant that helps users understand medicine leaflets quickly and easily.
 
-Users can upload a medicine leaflet (PDF) and ask questions مثل:
+Users can upload a medicine leaflet (PDF) and ask questions such as:
 
-* *Can I take this before food?*
-* *What are the side effects?*
+Can I take this before food?
+What are the side effects?
 
-The system answers **only based on the leaflet content**, ensuring accuracy and reliability.
+The system answers only based on the leaflet content, ensuring accuracy and reliability.
 
 ---
 

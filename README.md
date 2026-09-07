@@ -1,130 +1,586 @@
-# MediLeaf AI
+# 🌿 MediLeaf AI
 
-MediLeaf AI is a document-grounded medical leaflet assistant. Users upload a PDF and ask questions answered only from retrieved leaflet text. It is an educational RAG project, not a diagnostic or prescribing system.
+### Ask the leaflet. Get the evidence.
+MediLeaf AI is a document-grounded medical leaflet assistant that helps users understand medicine information directly from an uploaded PDF.
 
-## Architecture
+Instead of answering from general medical knowledge, the system follows a simple principle:
+
+> **If the leaflet does not support the answer, MediLeaf does not guess.**
+Upload a medicine leaflet, ask a question in natural language, and MediLeaf retrieves the most relevant passages before generating a structured answer with source information and grounding checks.
+
+**Educational project — not a diagnostic, prescribing, or clinical decision-making system.**
+
+---
+
+## ✨ What MediLeaf Can Do
+📄 **Read medicine leaflets**
+Upload one or more PDF leaflets and extract their text page by page.
+
+🔎 **Search beyond exact keywords**
+MediLeaf combines semantic vector retrieval with BM25 keyword search to find relevant content.
+
+⚡ **Hybrid retrieval**
+Vector search and BM25 results are combined using Reciprocal Rank Fusion (RRF).
+
+🎯 **Rerank the evidence**
+An optional Cross-Encoder reranker refines the retrieved candidates before generation.
+
+🧠 **Grounded generation**
+Gemini receives the retrieved leaflet context and is explicitly instructed to use that context only.
+
+📌 **Citation-aware answers**
+Generated answers reference retrieved source chunk IDs, which are validated against the actual retrieved context.
+
+🛡️ **Grounding verification**
+A lightweight lexical grounding check helps detect obviously unsupported generated answers.
+
+📊 **Confidence visibility**
+The interface separates retrieval confidence, grounding quality, and overall answer confidence.
+
+💬 **Conversation memory**
+A short session-based memory window supports follow-up questions without treating previous conversation as medical evidence.
+
+🚨 **Emergency keyword detection**
+Potentially urgent questions can trigger a visible emergency warning while the normal RAG pipeline remains grounded in the leaflet.
+
+👍 **User feedback**
+Users can mark answers as helpful or not helpful.
+
+---
+
+# 🧩 How It Works
+MediLeaf follows a multi-stage RAG pipeline:
 
 ```text
-PDF -> PyMuPDF extraction -> section-aware chunks -> E5 embeddings -> Chroma
-                                                   \-> BM25
-Question -> vector/BM25/hybrid RRF -> optional Cross-Encoder reranker
-         -> grounded prompt (v1/v2) -> Gemini JSON -> citation validation
-         -> lexical grounding check -> Streamlit or FastAPI response
+                Medicine PDF
+                     |
+                     v
+                PDF Extraction
+                  PyMuPDF
+                     |
+                     v
+                Section-aware
+                   Chunking
+                     |
+               +-----+-----+
+               v           v
+          Vector Search   BM25
+           ChromaDB       Keyword
+               +-----+-----+
+                     v
+                 RRF Hybrid
+                     |
+                     v
+              Cross-Encoder
+                Reranking
+                     |
+                     v
+              Grounded Prompt
+                     |
+                     v
+                   Gemini
+                     |
+               +-----+-----+
+               v           v
+         Citation Check  Grounding Check
+               +-----+-----+
+                     v
+              Structured Answer
 ```
 
-`app/service.py` is the shared orchestration boundary used by the API and evaluation code. The Streamlit application retains its existing workflow and UI. JSONL logs and `logs/medileaf_monitoring.db` capture request telemetry.
+---
 
-## Setup
+# 🔍 Retrieval
+MediLeaf currently supports four retrieval modes:
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-```
+| Mode | Description |
+|---|---|
+| `vector` | Semantic search using ChromaDB |
+| `bm25` | Keyword-based retrieval |
+| `hybrid` | Vector + BM25 using weighted RRF |
+| `hybrid_rerank` | Hybrid retrieval followed by Cross-Encoder reranking |
 
-Set `GOOGLE_API_KEY` in `.env`. Model selection is configurable without code changes:
+The default configuration uses:
 
 ```dotenv
-LLM_MODEL_NAME=gemini-1.5-flash
-# Examples for model comparison, selected one run at a time:
-# LLM_MODEL_NAME=gemini-1.5-pro
 RETRIEVAL_MODE=hybrid_rerank
 ```
 
-Run the UI:
+The system also keeps retrieval metadata such as:
+
+- source file
+- page number
+- section
+- chunk ID
+- retrieval method
+- retrieval confidence
+- reranker score
+
+---
+
+# 🧠 Grounded Generation
+The generation layer is designed around a strict rule:
+
+> **Retrieved leaflet content is the evidence.**
+
+The Gemini prompt explicitly instructs the model to:
+
+- use only the retrieved context
+- avoid outside medical knowledge
+- never guess missing information
+- return `insufficient_information` when evidence is inadequate
+- preserve the user's language
+- return structured JSON
+- provide citation IDs for supported claims
+
+The application then validates those citation IDs against the chunks that were actually retrieved.
+
+---
+
+# 📌 Citation & Grounding
+Each retrieved chunk receives a stable `SOURCE_ID`.
+
+Example:
+
+```text
+SOURCE_ID: leaflet_page_03_chunk_07
+FILE: medicine_leaflet.pdf
+PAGE: 3
+SECTION: Dosage
+```
+
+The model can return:
+
+```json
+{
+  "citations": [
+    "leaflet_page_03_chunk_07"
+  ]
+}
+```
+
+MediLeaf validates that the citation actually belongs to the retrieved context before treating it as trusted provenance.
+
+A lightweight lexical grounding check also compares the generated answer against the retrieved text.
+
+---
+
+# 📊 Confidence
+MediLeaf intentionally separates different signals instead of presenting one mysterious score.
+
+### Retrieval confidence
+How strong the retrieval signal was.
+
+### Grounding score
+How well the generated answer overlaps with the retrieved evidence.
+
+### Overall confidence
+A combined application-level signal built from retrieval and grounding quality.
+
+These values are shown directly in the Streamlit interface.
+
+> Confidence values are ranking/quality signals, not clinical probabilities.
+
+---
+
+# 💊 Structured Leaflet Summary
+After indexing a leaflet, MediLeaf can generate a structured overview including fields such as:
+
+- Medicine name
+- Drug class
+- Uses
+- Contraindications
+- Pregnancy
+- Breastfeeding
+- Children
+- Elderly
+- Dosage instructions
+- Missed dose
+- Overdose
+- Storage
+- Common side effects
+- Serious side effects
+- Warnings
+- When to contact a doctor
+
+Only information available in the leaflet is intended to populate these fields.
+
+---
+
+# 💬 Conversation Memory
+MediLeaf keeps a short session-based conversation window to support questions such as:
+
+```text
+User:
+What are the side effects?
+
+User:
+Can children use it?
+```
+
+The previous conversation helps resolve references such as **"it"** or **"the medicine"**.
+
+However:
+
+> **Conversation history is not treated as medical evidence.**
+
+Medical facts must still come from the currently retrieved leaflet context.
+
+---
+
+# 🚨 Safety Layer
+MediLeaf includes deterministic emergency keyword detection for questions mentioning situations such as:
+
+- overdose
+- severe allergic reaction
+- difficulty breathing
+- chest pain
+- seizure
+- loss of consciousness
+- poisoning
+
+When detected, the UI surfaces an emergency warning encouraging urgent professional care.
+
+This layer does not generate medical advice itself.
+
+---
+
+# 🖥️ Interface
+The application is built with Streamlit and includes:
+
+### Main experience
+
+- PDF upload
+- automatic leaflet processing
+- medicine snapshot
+- quick questions
+- conversational Q&A
+- confidence indicators
+- evidence/source display
+- grounding status
+- answer explanation
+- feedback buttons
+
+### Design
+The UI uses a dark medical-inspired visual style with:
+
+- glass-style cards
+- green accent palette
+- structured evidence panels
+- compact system status indicators
+- responsive Streamlit columns
+
+---
+
+# ⚙️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python |
+| UI | Streamlit |
+| LLM | Google Gemini |
+| LLM framework | LangChain |
+| Embeddings | Hugging Face Sentence Transformers |
+| Vector database | ChromaDB |
+| Keyword retrieval | BM25 |
+| Reranking | Sentence Transformers Cross-Encoder |
+| PDF parsing | PyMuPDF |
+| Structured data | Python dataclasses |
+| Configuration | `.env` / environment variables |
+| API | FastAPI |
+| Monitoring | SQLite + JSONL |
+| Testing | Pytest |
+| Containers | Docker / Docker Compose |
+
+---
+
+# 🔌 API
+MediLeaf also exposes a FastAPI layer around the shared application service.
+
+### Health
+
+```text
+GET /health
+```
+
+### Ask
+
+```text
+POST /ask
+```
+
+### Streaming
+
+```text
+POST /ask/stream
+```
+
+The streaming endpoint currently streams the completed structured result as newline-delimited JSON rather than token-by-token Gemini output.
+
+### Feedback
+
+```text
+POST /feedback
+```
+
+---
+
+# 📈 Evaluation
+The project includes retrieval evaluation utilities for comparing:
+
+```text
+vector
+bm25
+hybrid
+hybrid_rerank
+```
+
+Current metrics include:
+
+### Hit Rate@5
+Measures whether the relevant chunk appears in the top five retrieved results.
+
+### MRR@5
+Measures how highly the relevant result is ranked.
+
+MediLeaf also includes Prompt A/B evaluation utilities for comparing different prompt versions using metrics such as:
+
+- grounded rate
+- citation rate
+- mean answer confidence
+
+The current evaluation relies on manually prepared relevant chunk IDs rather than a large versioned benchmark dataset.
+
+---
+
+# 📝 Monitoring
+Runtime telemetry is captured locally.
+
+The monitoring layer records information such as:
+
+- question
+- answer
+- latency
+- retrieval mode
+- confidence
+- grounding result
+- insufficient-information state
+- feedback
+
+Artifacts are stored through:
+
+```text
+logs/
+├── JSONL logs
+└── medileaf_monitoring.db
+```
+
+---
+
+# 🐳 Docker
+The repository includes Docker support for running the application stack.
+
+```text
+docker compose up --build
+```
+
+Default local services:
+
+```text
+Streamlit -> http://localhost:8501
+FastAPI   -> http://localhost:8000
+```
+
+Secrets should remain in a local `.env` file and should never be committed to Git.
+
+---
+
+# 🚀 Local Setup
+
+### 1. Clone
+
+```powershell
+git clone https://github.com/menna-nageh/MediLeaf-AI.git
+cd MediLeaf-AI
+```
+
+### 2. Create a virtual environment
+
+Windows:
+
+```powershell
+py -3.12 -m venv .venv
+```
+
+Activate it:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell execution policy blocks activation, run the environment directly:
+
+```powershell
+.\.venv\Scripts\python.exe
+```
+
+### 3. Install dependencies
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### 4. Configure environment
+
+Copy `.env.example` to `.env`, then configure:
+
+```dotenv
+GOOGLE_API_KEY=your_key_here
+LLM_MODEL_NAME=gemini-1.5-flash
+RETRIEVAL_MODE=hybrid_rerank
+TOP_K=5
+VECTOR_TOP_K=10
+BM25_TOP_K=10
+RERANK_TOP_K=5
+RERANKER_ENABLED=true
+GROUNDING_CHECK_ENABLED=true
+CITATION_ENABLED=true
+```
+
+### 5. Run the application
 
 ```powershell
 streamlit run streamlit_app.py
 ```
 
-## Retrieval Evaluation
+---
 
-`app.evaluation` provides Hit Rate@5 and MRR@5 for `vector`, `bm25`, `hybrid`, and `hybrid_rerank`. Supply a list of `RetrievalExample` values containing a question and gold `chunk_id` set, then call `evaluate_retrieval(store, examples)`. Prompt A/B evaluation compares `v1` and `v2` using grounded rate, citation rate, and mean answer confidence through `evaluate_prompts(...)`.
-
-## API
-
-Start the API with:
+# 🧪 Testing
+Run the test suite with:
 
 ```powershell
-uvicorn app.api:app --reload
+python -m pytest -q
 ```
 
-Endpoints:
-
-- `GET /health`
-- `POST /ask` with `session_id`, `question`, optional `memory_context` and `retrieval_mode`
-- `POST /ask/stream` with the same body; returns newline-delimited JSON
-- `POST /feedback` with `session_id`, `question`, and boolean `helpful`
-
-The requested `session_id` must refer to an indexed Chroma collection created by the existing ingestion workflow.
-
-## Docker
-
-Keep secrets in a local `.env` file and run:
+Compile the application:
 
 ```powershell
-docker compose up --build
+python -m compileall app utils streamlit_app.py
 ```
 
-The API is at `http://localhost:8000`; Streamlit is at `http://localhost:8501`. Local `data`, `logs`, and `vector_db` directories are mounted as volumes.
+The test suite covers areas including:
 
-## Monitoring
+- PDF parsing
+- memory
+- emergency detection
+- retrieval
+- grounding
+- citations
+- evaluation utilities
+- prompts
+- API contracts
 
-Each request records its question, answer, latency, retrieval mode, confidence, grounding result, and insufficient-information state. Feedback is stored with the question and session ID. Runtime artifacts are ignored by Git.
+External model behaviour is intentionally separated from the offline tests.
 
-## Rubric Mapping
+---
 
-- RAG pipeline: parsing, chunking, embeddings, Chroma, BM25, hybrid RRF, reranking
-- Generation quality: Gemini, grounded prompts, structured output, citations, grounding checks
-- Evaluation: Hit Rate@5, MRR@5, retrieval-mode comparison, prompt A/B comparison
-- Engineering: shared service layer, configurable model, FastAPI, SQLite monitoring, Docker
-- Quality: unit tests for parser, memory, emergency detection, evaluation, grounding/citations, and API contracts
+# 🗂️ Project Structure
 
-## Implementation Checklist
+```text
+MediLeaf-AI/
+│
+├── app/
+│   ├── config.py
+│   ├── embeddings.py
+│   ├── emergency.py
+│   ├── llm.py
+│   ├── memory.py
+│   ├── parser.py
+│   ├── prompt_builder.py
+│   ├── retriever.py
+│   ├── service.py
+│   ├── evaluation.py
+│   └── api.py
+│
+├── assets/
+├── data/
+│   └── pdfs/
+├── logs/
+├── styles/
+├── tests/
+├── utils/
+├── vector_db/
+│
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── streamlit_app.py
+├── README.md
+└── .env.example
+```
 
-| Feature | Status | Notes |
-|---|---:|---|
-| PDF ingestion | ✅ | Streamlit upload workflow |
-| PDF parsing | ✅ | PyMuPDF page extraction and cleaning |
-| Chunking | ✅ | Structure-aware chunks with provenance |
-| Embeddings | ✅ | Configurable HuggingFace embeddings |
-| Vector DB / Chroma | ✅ | Persistent Chroma collections per session |
-| Semantic retrieval | ✅ | Vector retrieval with relevance filtering |
-| BM25 | ✅ | `rank-bm25` dependency and cached corpus |
-| Hybrid retrieval / RRF | ✅ | Weighted reciprocal rank fusion |
-| Cross-encoder reranking | ✅ | Optional configurable reranker |
-| Citation IDs | ✅ | Validated source chunk IDs |
-| Grounding check | ✅ | Lexical heuristic grounding score |
-| Structured LLM output | ✅ | Defensive JSON normalization |
-| Conversation memory | ✅ | Bounded session memory, excluded from evidence |
-| Emergency detection | ✅ | Emergency keyword and phrase detection |
-| Streamlit UI | ✅ | PDF upload, chat, summary, feedback |
-| Better UI / source display | ✅ | Confidence, sources, citations, retrieval details |
-| Quantitative retrieval evaluation | ✅ | Hit Rate@5 and MRR@5 utilities |
-| Retrieval comparison experiments | ✅ | Vector, BM25, hybrid, hybrid_rerank |
-| RAG evaluation / LLM judge | ⚠️ | Grounding and citation checks exist; LLM judge not yet automated |
-| Prompt A/B testing | ✅ | Prompt versions `v1` and `v2` |
-| Model comparison | ✅ | `LLM_MODEL_NAME` environment configuration |
-| FastAPI API | ✅ | `/ask`, `/feedback`, `/health` |
-| Streaming API | ✅ | `/ask/stream` newline-delimited JSON response |
-| Monitoring DB | ✅ | SQLite request and feedback records |
-| Grafana dashboard | ❌ | Not included; SQLite and JSONL data are ready for a future dashboard |
-| Docker Compose | ✅ | API and Streamlit services |
-| Automated ingestion pipeline | ⚠️ | Upload-driven ingestion exists; batch watcher not yet included |
-| Persistent BM25 index | ⚠️ | Cached per process; durable on-disk BM25 index not yet included |
-| Deployment setup | ✅ | Docker Compose and Uvicorn configuration |
-| Security / rate limiting / API auth | ⚠️ | API key setting exists but request enforcement and rate limiting remain |
-| Reproducible evaluation artifacts | ⚠️ | Evaluation utilities exist; versioned gold datasets/reports remain |
-| Large automated test suite | ✅ | Unit and API contract coverage included; external model tests are mocked or omitted |
+---
 
-The checklist deliberately distinguishes implemented features from planned
-production hardening. The incomplete items are limitations, not hidden claims
-about the current system.
+# ⚠️ Current Limitations
+MediLeaf is intentionally honest about what it does not currently provide.
 
-## Limitations
+The project currently does **not** include:
 
-- Evaluation quality depends on a manually prepared gold set of relevant chunk IDs.
-- `/ask/stream` streams the completed structured result; Gemini token streaming is not enabled yet.
-- The system does not replace a clinician and cannot verify leaflet accuracy, patient-specific safety, or current regulatory guidance.
-- Cross-Encoder and embedding models may require significant CPU memory on a small Windows machine.
+- an automated LLM-as-a-judge evaluation pipeline
+- a Grafana monitoring dashboard
+- a durable on-disk BM25 index
+- a batch/watch-based ingestion pipeline
+- versioned benchmark evaluation reports
+- production-grade API authentication and rate limiting
+- token-by-token Gemini streaming
+
+These are potential future improvements rather than features claimed by the current implementation.
+
+---
+
+# 🔮 Future Direction
+Possible next steps include:
+
+```text
+Real query dataset
+        |
+        v
+Automated benchmark
+        |
+        v
+LLM-as-a-judge
+        |
+        v
+Prompt / model experiments
+        |
+        v
+Persistent monitoring
+        |
+        v
+Production deployment
+```
+
+The current architecture is designed so these capabilities can be added without replacing the existing RAG pipeline.
+
+---
+
+# 🎓 Project Goal
+MediLeaf AI was built as an applied RAG project to explore how retrieval, reranking, structured generation, citations, and grounding checks can work together around real document-based questions.
+
+The core idea is intentionally simple:
+
+> **Retrieve the evidence first. Generate second.**
+
+---
+
+# 📄 Disclaimer
+MediLeaf AI is an educational software project.
+
+It is not a doctor, pharmacist, diagnostic system, prescribing system, or substitute for professional medical advice.
+
+The application is designed to answer from uploaded leaflet content and cannot independently verify whether the leaflet itself is complete, current, or appropriate for a particular patient.
+
+---
+
+# 📜 License
+This project is shared for educational and portfolio purposes.

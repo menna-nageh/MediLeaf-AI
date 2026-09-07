@@ -25,6 +25,7 @@ data/pdfs/*
 
 # Logs
 logs/*.log
+logs/*.db
 !logs/.gitkeep
 
 # OS / editor

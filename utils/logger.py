@@ -54,6 +54,7 @@ def log_retrieval(
     num_results: int,
     top_confidence: float,
     execution_time_seconds: float,
+    retrieval_mode: str = "",
 ) -> None:
     _write(
         "retrieval",
@@ -63,11 +64,21 @@ def log_retrieval(
             "num_results": num_results,
             "top_confidence": top_confidence,
             "execution_time_seconds": execution_time_seconds,
+            "retrieval_mode": retrieval_mode,
         },
     )
 
 
-def log_answer(session_id: str, question: str, execution_time_seconds: float, insufficient: bool) -> None:
+def log_answer(
+    session_id: str,
+    question: str,
+    execution_time_seconds: float,
+    insufficient: bool,
+    confidence: float = 0.0,
+    grounded: bool = False,
+    grounding_score: float = 0.0,
+    retrieval_mode: str = "",
+) -> None:
     _write(
         "answer",
         {
@@ -75,6 +86,10 @@ def log_answer(session_id: str, question: str, execution_time_seconds: float, in
             "question": question,
             "execution_time_seconds": execution_time_seconds,
             "insufficient_information": insufficient,
+            "confidence": confidence,
+            "grounded": grounded,
+            "grounding_score": grounding_score,
+            "retrieval_mode": retrieval_mode,
         },
     )
 

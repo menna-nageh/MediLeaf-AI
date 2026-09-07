@@ -2,7 +2,17 @@
 
 import pytest
 
-from app.prompt_builder import safe_parse_json
+from app.prompt_builder import build_answer_prompt, safe_parse_json
+from app.retriever import RetrievedChunk
+
+
+def test_prompt_versions_are_selectable():
+    chunks = [RetrievedChunk("Take with food.", 1, "Dose", "leaflet", 90, "chunk-1")]
+    version_one = build_answer_prompt("How should I take it?", chunks, prompt_version="v1")
+    version_two = build_answer_prompt("How should I take it?", chunks, prompt_version="v2")
+    assert "PROMPT_VERSION: v1" in version_one
+    assert "PROMPT_VERSION: v2" in version_two
+    assert version_one != version_two
 
 
 def test_parses_clean_json():
